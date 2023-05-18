@@ -1,9 +1,8 @@
 {
-    "projectors": [
+    "models": [
         {
-            "id": 1,
-            "location": "VB",
-            "ip": "192.168.40.100",
+            "model": "DU72X",
+            "brand": "Vivitek",
             "port": 23,
             "on": "op power.on\r",
             "off": "op power.off\r",
