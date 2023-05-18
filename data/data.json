@@ -1,0 +1,23 @@
+{
+    "projectors": [
+        {
+            "id": 1,
+            "location": "VB",
+            "ip": "192.168.40.100",
+            "port": 23,
+            "on": "op power.on\r",
+            "off": "op power.off\r",
+            "status": {
+                "command": "op stauts\r",
+                "responses": [
+                    {"value": "0", "message": "reset" },
+                    {"value": "1", "message": "standby" },
+                    {"value": "2", "message": "active" },
+                    {"value": "3", "message": "cooling" },
+                    {"value": "4", "message": "warming" },
+                    {"value": "5", "message": "power up" }
+                ]
+            }
+        }
+    ]
+}
