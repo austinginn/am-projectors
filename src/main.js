@@ -13,11 +13,11 @@ if (process.argv[3] === "on") {
   await powerOn(process.argv[2]);
 }
 
-if(process.argv[3] === "off") {
+if (process.argv[3] === "off") {
   await powerOff(process.argv[2]);
 }
 
-if(process.argv[3] === "status") {
+if (process.argv[3] === "status") {
   await powerOff(process.argv[2]);
 }
 
@@ -44,37 +44,49 @@ async function telnetConnect(ip, port, shell, timeout) {
 }
 
 async function powerOn(name) {
-  //find index to item in config based on name
-  const index = config.devices.findIndex(d => d.name == name);
+  //find device and model
+  const data = findIndexes(name);
 
-  //check if name was found
-  if(index == -1){
-    console.error("device with that name was not found");
+  //check if found
+  if(data.model == null || data.device == null) {
+    console.error("device or model not found");
     return -1;
   }
-
-  const device = config.devices[index];
-
-  //find index in models to specific model
-  const model_index = models.models.findIndex(m => m.model == device.model);
-
-  //check if model was found
-  if(model_index == -1){
-    console.error("model was not found")
-    return -1;
-  }
-
-  const model = models.models[model_index];
 
   //connect
-  const connection = await telnetConnect(device.ip, model.port, model.shell, model.timeout);
+  const connection = await telnetConnect(data.device.ip, data.model.port, data.model.shell, data.model.timeout);
 
   //power on
-  const res = await connection.exec(model.on);
+  const res = await connection.exec(data.model.on);
 
   console.log(res);
 
   connection.end();
 
   return res;
+}
+
+function findIndexes(name) {
+  let device = null;
+  let model = null;
+
+  //find index to item in config based on name
+  const index = config.devices.findIndex(d => d.name == name);
+
+  //check if name was found
+  if (index > -1) {
+    device = config.devices[index];
+  }
+
+  if (device != null) {
+    //find index in models to specific model
+    const model_index = models.models.findIndex(m => m.model == device.model);
+
+    //check if model was found
+    if (model_index > -1) {
+      model = models.models[model_index];
+    }
+  }
+
+  return { device, model }
 }
