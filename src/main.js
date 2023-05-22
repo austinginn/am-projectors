@@ -4,7 +4,7 @@ import models from '../data/models.json';
 
 //check for all args present
 if (process.argv.length !== 4) {
-  console.error('Expected 2 arguments - {NAME} {CMD}');
+  console.error('Expected 2 arguments - {IP} {CMD}');
   process.exit(1);
 }
 
@@ -24,28 +24,55 @@ if (process.argv[3] === "status") {
 console.log("done");
 
 //connect via telnet
-async function telnetConnect(ip, port, shell, timeout) {
+async function telnetConnect(ip, port, timeout, cmd) {
   const connection = new Telnet();
 
   const params = {
     host: host,
     port: port,
-    shellPrompt: shell, // or negotiationMandatory: false
+    negotiationMandatory: false,
     timeout: timeout
   }
 
   try {
-    await connection.connect(params)
-  } catch (error) {
-    console.error(error.msg);
-  }
+    //connect
+    await connection.connect(params);
+    console.log("Connected to ", host);
 
-  return connection;
+    //listen for data
+    connection.on('data', (data) => { 
+      console.log('Recieved from ', host, data.toString());
+    });
+
+    //inside shell
+    connection.shell((err, stream) => {
+      if(err) {
+        console.error('Error from ', host, err);
+        return;
+      }
+
+      //send cmd
+      stream.write(cmd);
+
+      //receive response
+      stream.on('data', (data) => {
+        console.log('Received from ', host, data.toString());
+      });
+
+      // Close the connection
+      stream.end('exit\n');
+    });
+  } catch (error) {
+    console.error("Error:", error);
+  } finally {
+    connection.end();
+    console.log('Disconnected from, ', host);
+  }
 }
 
-async function powerOn(name) {
+async function powerOn(ip) {
   //find device and model
-  const data = findIndexes(name);
+  const data = findIndexes(ip);
 
   //check if found
   if(data.model == null || data.device == null) {
@@ -53,25 +80,18 @@ async function powerOn(name) {
     return -1;
   }
 
-  //connect
-  const connection = await telnetConnect(data.device.ip, data.model.port, data.model.shell, data.model.timeout);
+  //exec connection and cmd
+  await telnetConnect(data.device.ip, data.model.port, 5000, data.model.status);
 
-  //power on
-  const res = await connection.exec(data.model.on);
-
-  console.log(res);
-
-  connection.end();
-
-  return res;
+  return 0;
 }
 
-function findIndexes(name) {
+function findIndexes(ip) {
   let device = null;
   let model = null;
 
   //find index to item in config based on name
-  const index = config.devices.findIndex(d => d.name == name);
+  const index = config.devices.findIndex(d => d.ip == ip);
 
   //check if name was found
   if (index > -1) {
