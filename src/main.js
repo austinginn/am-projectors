@@ -1,143 +1,77 @@
-import { Telnet } from 'telnet-client';
 import config from '../data/config.json' assert {type: 'json'};
 import models from '../data/models.json'assert {type: 'json'};
-import net from 'net';
+import TelnetClient from './telnetClient.js';
 
-const socket = new net.Socket();
-socket.on('error', (err) => {
-  console.log(err);
-})
+const TIMEOUT = 5000;
 
-socket.on('data', (data) => {
-  console.log(data.toString());
-})
-
-socket.connect("23", "192.168.40.100", () => {
-  console.log("connected");
-  socket.write("op status\r\n");
-})
-
-// check for all args present
-// if (process.argv.length !== 4) {
-//   console.error('Expected 2 arguments - {IP} {CMD}');
-//   process.exit(1);
-// }
-
-//run cmd
-// if (process.argv[3] === "on") {
-//   await powerOn(process.argv[2]);
-// }
-
-// if (process.argv[3] === "off") {
-//   await powerOff(process.argv[2]);
-// }
-
-// if (process.argv[3] === "status") {
-//   await powerOff(process.argv[2]);
-// }
-
-// console.log("done");
-
-//connect via telnet
-const connectToDeviceTelnet = async (ip, port, timeout, cmd) => {
-  const connection = new Telnet();
-
-  const params = {
-    host: ip,
-    port: port,
-    shellPrompt: "",
-    negotiationMandatory: false,
-    timeout: timeout,
-    // debug: true,
-    // initialLFCR: true
-  }
+const connectToDevice = async (ip, port, timeout, cmd) => {
+  const client = new TelnetClient();
 
   try {
-    //connect
-    await connection.connect(params);
-    console.log("Connected to ", ip);
-    
+    await client.connect(ip, port, timeout);
+    console.log('Connected to: ', ip);
 
-    //listen for data
-    connection.on('data', (data) => { 
-      console.log('Recieved from ', ip, data.toString());
-    });
+    //send with timeout
+    const res = await client.writeWithTimeout(cmd.command, 5000);
+    for(let i = 0; i < cmd.responses.length; i++){
+      if(res == cmd.responses[i].value){
+        console.log(cmd.responses[i].message);
+      }
+    }
 
-    connection.on('ready', (data) => {
-      console.log('ready', data.toString());
-    });
-    connection.write("op status\r\n", (res) => {
-      console.log("send op status");
-      console.log(res);
-    });
-
-
-
-    // //inside shell
-    // connection.shell((err, stream) => {
-    //   if(err) {
-    //     console.error('Error from ', ip, err);
-    //     return;
-    //   }
-
-    //   //send cmd
-    //   // stream.write("op status\r\n");
-
-    //   //receive response
-    //   stream.on('data', (data) => {
-    //     console.log('Received from ', ip, data.toString());
-    //   });
-
-    //   // Close the connection
-    //   stream.end('exit\n');
-    // });
   } catch (error) {
-    console.error(error);
+    // console.log(error.message);
+
+    if (error.message == "Response timeout") {
+      console.log("Projector powered off");
+    } else {
+      console.error(error);
+    }
+
   } finally {
-    // connection.end();
-    // console.log('Disconnected from ', ip);
+    //graceful exit
+    await client.end();
+    console.log('Disconnected from: ', ip);
   }
 }
 
-// connectToDeviceTelnet("192.168.40.100", "23", 6000, "");
-
-async function powerOn(ip) {
-  //find device and model
-  const data = findIndexes(ip);
-
-  //check if found
-  if(data.model == null || data.device == null) {
-    console.error("device or model not found");
-    return -1;
-  }
-
-  //exec connection and cmd
-  await telnetConnect(data.device.ip, data.model.port, 5000, data.model.status.command);
-
-  return 0;
+// check for required args
+if (process.argv.length !== 5) {
+  console.error('Expected 3 arguments - {IP} {CMD} {MODEL}');
+  process.exit(1);
 }
 
-function findIndexes(ip) {
-  let device = null;
+const model = getModel(process.argv[4]);
+if (model == null) {
+  console.error("Model not found");
+  process.exit(1);
+}
+
+//run cmd
+if (process.argv[3] === "on") {
+  await connectToDevice(process.argv[2], model.port, TIMEOUT, model.on);
+}
+
+if (process.argv[3] === "off") {
+  await connectToDevice(process.argv[2], model.port, TIMEOUT, model.off);
+}
+
+if (process.argv[3] === "status") {
+  await connectToDevice(process.argv[2], model.port, TIMEOUT, model.status);
+}
+
+// connectToDevice("192.168.40.100", 23, 5000);
+
+function getModel(id) {
   let model = null;
 
-  //find index to item in config based on name
-  const index = config.devices.findIndex(d => d.ip == ip);
+  //find index in models to specific model
+  const model_index = models.models.findIndex(m => m.model == id );
 
-  //check if name was found
-  if (index > -1) {
-    device = config.devices[index];
+  //check if model was found
+  if (model_index > -1) {
+    model = models.models[model_index];
   }
 
-  if (device != null) {
-    //find index in models to specific model
-    const model_index = models.models.findIndex(m => m.model == device.model);
-
-    //check if model was found
-    if (model_index > -1) {
-      model = models.models[model_index];
-    }
-  }
-
-  return { device, model }
+  return model;
 }

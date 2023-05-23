@@ -4,10 +4,21 @@
             "model": "DU72X",
             "brand": "Vivitek",
             "port": 23,
-            "on": "op power.on\r",
-            "off": "op power.off\r",
+            "on": {
+                "command": "op power.on\r\n",
+                "responses": [
+                    { "value": "OP POWER ON\r", "message": "Projector powering on." },
+                    { "value": "*Illegal format#\r", "message": "Projector is on." }  
+                ]
+            },
+            "off": {
+                "command": "op power.off\r\n",
+                "responses": [
+                    { "value": "OP POWER OFF\r", "message": "Projector powering off." }
+                ]
+            },
             "status": {
-                "command": "op stauts\r",
+                "command": "op stauts\r\n",
                 "responses": [
                     {"value": "0", "message": "reset" },
                     {"value": "1", "message": "standby" },
