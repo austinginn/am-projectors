@@ -1,74 +1,105 @@
 import { Telnet } from 'telnet-client';
-import config from '../data/config.json';
-import models from '../data/models.json';
+import config from '../data/config.json' assert {type: 'json'};
+import models from '../data/models.json'assert {type: 'json'};
+import net from 'net';
 
-//check for all args present
-if (process.argv.length !== 4) {
-  console.error('Expected 2 arguments - {IP} {CMD}');
-  process.exit(1);
-}
+const socket = new net.Socket();
+socket.on('error', (err) => {
+  console.log(err);
+})
+
+socket.on('data', (data) => {
+  console.log(data.toString());
+})
+
+socket.connect("23", "192.168.40.100", () => {
+  console.log("connected");
+  socket.write("op status\r\n");
+})
+
+// check for all args present
+// if (process.argv.length !== 4) {
+//   console.error('Expected 2 arguments - {IP} {CMD}');
+//   process.exit(1);
+// }
 
 //run cmd
-if (process.argv[3] === "on") {
-  await powerOn(process.argv[2]);
-}
+// if (process.argv[3] === "on") {
+//   await powerOn(process.argv[2]);
+// }
 
-if (process.argv[3] === "off") {
-  await powerOff(process.argv[2]);
-}
+// if (process.argv[3] === "off") {
+//   await powerOff(process.argv[2]);
+// }
 
-if (process.argv[3] === "status") {
-  await powerOff(process.argv[2]);
-}
+// if (process.argv[3] === "status") {
+//   await powerOff(process.argv[2]);
+// }
 
-console.log("done");
+// console.log("done");
 
 //connect via telnet
-async function telnetConnect(ip, port, timeout, cmd) {
+const connectToDeviceTelnet = async (ip, port, timeout, cmd) => {
   const connection = new Telnet();
 
   const params = {
-    host: host,
+    host: ip,
     port: port,
+    shellPrompt: "",
     negotiationMandatory: false,
-    timeout: timeout
+    timeout: timeout,
+    // debug: true,
+    // initialLFCR: true
   }
 
   try {
     //connect
     await connection.connect(params);
-    console.log("Connected to ", host);
+    console.log("Connected to ", ip);
+    
 
     //listen for data
     connection.on('data', (data) => { 
-      console.log('Recieved from ', host, data.toString());
+      console.log('Recieved from ', ip, data.toString());
     });
 
-    //inside shell
-    connection.shell((err, stream) => {
-      if(err) {
-        console.error('Error from ', host, err);
-        return;
-      }
-
-      //send cmd
-      stream.write(cmd);
-
-      //receive response
-      stream.on('data', (data) => {
-        console.log('Received from ', host, data.toString());
-      });
-
-      // Close the connection
-      stream.end('exit\n');
+    connection.on('ready', (data) => {
+      console.log('ready', data.toString());
     });
+    connection.write("op status\r\n", (res) => {
+      console.log("send op status");
+      console.log(res);
+    });
+
+
+
+    // //inside shell
+    // connection.shell((err, stream) => {
+    //   if(err) {
+    //     console.error('Error from ', ip, err);
+    //     return;
+    //   }
+
+    //   //send cmd
+    //   // stream.write("op status\r\n");
+
+    //   //receive response
+    //   stream.on('data', (data) => {
+    //     console.log('Received from ', ip, data.toString());
+    //   });
+
+    //   // Close the connection
+    //   stream.end('exit\n');
+    // });
   } catch (error) {
-    console.error("Error:", error);
+    console.error(error);
   } finally {
-    connection.end();
-    console.log('Disconnected from, ', host);
+    // connection.end();
+    // console.log('Disconnected from ', ip);
   }
 }
+
+// connectToDeviceTelnet("192.168.40.100", "23", 6000, "");
 
 async function powerOn(ip) {
   //find device and model
@@ -81,7 +112,7 @@ async function powerOn(ip) {
   }
 
   //exec connection and cmd
-  await telnetConnect(data.device.ip, data.model.port, 5000, data.model.status);
+  await telnetConnect(data.device.ip, data.model.port, 5000, data.model.status.command);
 
   return 0;
 }
