@@ -18,7 +18,7 @@
                 ]
             },
             "status": {
-                "command": "op stauts\r\n",
+                "command": "op status\r\n",
                 "responses": [
                     {"value": "0", "message": "reset" },
                     {"value": "1", "message": "standby" },

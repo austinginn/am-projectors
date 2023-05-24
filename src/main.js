@@ -12,7 +12,9 @@ const connectToDevice = async (ip, port, timeout, cmd) => {
     console.log('Connected to: ', ip);
 
     //send with timeout
-    const res = await client.writeWithTimeout(cmd.command, 5000);
+    const res = await client.writeWithTimeout(cmd.command, timeout);
+
+    //handle possible responses
     for(let i = 0; i < cmd.responses.length; i++){
       if(res == cmd.responses[i].value){
         console.log(cmd.responses[i].message);
@@ -23,7 +25,7 @@ const connectToDevice = async (ip, port, timeout, cmd) => {
     // console.log(error.message);
 
     if (error.message == "Response timeout") {
-      console.log("Projector powered off");
+      console.log("Timed out waiting for a response.");
     } else {
       console.error(error);
     }
