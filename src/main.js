@@ -1,7 +1,6 @@
 const models = require('../data/models.js');
 const TelnetClient = require('./telnetClient.js');
 
-
 const TIMEOUT = 5000;
 
 const connectToDevice = async (ip, port, timeout, cmd) => {
