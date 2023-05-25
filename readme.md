@@ -7,6 +7,10 @@ Download the executable for your OS. And cd into that directory.
 ```console
 cd ~/Downloads
 ```
+Set executable permissions.
+```console
+sudo chmod +x projector-macos-x64 
+```
 Run the projector executable. The required arguments are {IP} {CMD} {MODEL}.
 ```console
 ./projector-macos-x64 192.168.1.2 on DU72X
