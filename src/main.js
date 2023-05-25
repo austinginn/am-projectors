@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import config from '../data/config.json' assert {type: 'json'};
 import models from '../data/models.json'assert {type: 'json'};
 import TelnetClient from './telnetClient.js';
@@ -61,8 +63,6 @@ if (process.argv[3] === "off") {
 if (process.argv[3] === "status") {
   await connectToDevice(process.argv[2], model.port, TIMEOUT, model.status);
 }
-
-// connectToDevice("192.168.40.100", 23, 5000);
 
 function getModel(id) {
   let model = null;

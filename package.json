@@ -3,13 +3,18 @@
   "name": "am-projectors",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
+  "main": "src/main.js",
+  "bin": {
     "projector": "src/main.js"
   },
-  "author": "",
+  "author": "Austin Ginn",
   "license": "ISC",
   "dependencies": {
-    "telnet-client": "^2.0.8"
+  },
+  "pkg": {
+    "assets": "data/*",
+    "scripts": "src/telnetClient.js",
+    "targets": [ "node14-linux-arm64" ],
+    "outputPath": "dist"
   }
 }

@@ -11,6 +11,10 @@ Run the projector executable. The required arguments are {IP} {CMD} {MODEL}.
 ```console
 ./projector 192.168.1.2 on DU72X
 ```
+Available commands:
+- on
+- off
+- status
 ## Using Node instead of executable
 ```console
 git clone https://github.com/austinginn/am-projectors.git
