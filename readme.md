@@ -1,5 +1,5 @@
 # Projector Network Control
-Control power and check status of supported projector models from terminal or the command line.  Written in NodeJS and compiled for Windows, Macos, and Linux using nexe. Please submit projector requests to [austinleeginn@gmail.com](mailto:austinleeginn@gmail.com)
+Control power and check status of supported projector models from terminal or the command line.  Written in NodeJS and compiled for Windows, Macos, and Linux using pkg. Please submit projector requests to [austinleeginn@gmail.com](mailto:austinleeginn@gmail.com)
 ___
 
 ## Quickstart - *OS Dependent*
