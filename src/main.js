@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import config from '../data/config.json' assert {type: 'json'};
 import models from '../data/models.json'assert {type: 'json'};
 import TelnetClient from './telnetClient.js';
 

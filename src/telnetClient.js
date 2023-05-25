@@ -61,49 +61,92 @@ class TelnetClient {
     });
   }
 
-  waitForResponse(timeout) {
+//   waitForResponse(timeout) {
+//     return new Promise((resolve, reject) => {
+//       let responseData = '';
+
+//       const onTimeout = () => {
+//         this.socket.removeListener('data', onData);
+//         reject(new Error('Response timeout'));
+//       };
+
+//       const timeoutId = setTimeout(onTimeout, timeout);
+
+//       const onData = (data) => {
+//         clearTimeout(timeoutId);
+//         this.socket.removeListener('data', onData);
+//         responseData += data.toString();
+//         resolve(responseData);
+//       };
+
+//       this.socket.on('data', onData);
+
+//       this.socket.once('close', () => {
+//         clearTimeout(timeoutId);
+//         this.socket.removeListener('data', onData);
+//         reject(new Error('Connection closed before response'));
+//       });
+
+//       this.socket.once('error', (error) => {
+//         clearTimeout(timeoutId);
+//         this.socket.removeListener('data', onData);
+//         reject(error);
+//       });
+
+//       this.socket.once('end', () => {
+//         clearTimeout(timeoutId);
+//         this.socket.removeListener('data', onData);
+//         resolve(responseData);
+//       });
+//     });
+//   }
+
+//   async writeWithTimeout(data, timeout) {
+//     await this.write(data);
+//     return Promise.race([this.waitForResponse(timeout), new Promise((_, reject) => setTimeout(() => reject(new Error('Response timeout')), timeout))]);
+//   }
+
+waitForResponse() {
     return new Promise((resolve, reject) => {
-      let responseData = '';
-
-      const onTimeout = () => {
-        this.socket.removeListener('data', onData);
-        reject(new Error('Response timeout'));
+      const responseHandler = (response) => {
+        resolve(response);
       };
-
-      const timeoutId = setTimeout(onTimeout, timeout);
-
-      const onData = (data) => {
-        clearTimeout(timeoutId);
-        this.socket.removeListener('data', onData);
-        responseData += data.toString();
-        resolve(responseData);
-      };
-
-      this.socket.on('data', onData);
-
-      this.socket.once('close', () => {
-        clearTimeout(timeoutId);
-        this.socket.removeListener('data', onData);
-        reject(new Error('Connection closed before response'));
-      });
-
-      this.socket.once('error', (error) => {
-        clearTimeout(timeoutId);
-        this.socket.removeListener('data', onData);
+  
+      const errorHandler = (error) => {
         reject(error);
-      });
-
-      this.socket.once('end', () => {
-        clearTimeout(timeoutId);
-        this.socket.removeListener('data', onData);
-        resolve(responseData);
-      });
+      };
+  
+      const endHandler = () => {
+        reject(new Error('Connection ended'));
+      };
+  
+      this.socket.once('data', responseHandler);
+      this.socket.once('error', errorHandler);
+      this.socket.once('end', endHandler);
     });
   }
-
+  
   async writeWithTimeout(data, timeout) {
     await this.write(data);
-    return Promise.race([this.waitForResponse(timeout), new Promise((_, reject) => setTimeout(() => reject(new Error('Response timeout')), timeout))]);
+  
+    return Promise.race([
+      this.waitForResponse(),
+      new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          reject(new Error('Response timeout'));
+        }, timeout);
+  
+        this.socket.once('data', (response) => {
+          clearTimeout(timeoutId);
+          resolve(response);
+        });
+  
+        this.socket.once('error', (error) => {
+          clearTimeout(timeoutId);
+          reject(error);
+        });
+      })
+    ]);
   }
 }
 
