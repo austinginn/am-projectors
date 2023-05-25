@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "name": "am-projectors",
   "version": "1.0.0",
   "description": "",
@@ -7,14 +6,23 @@
   "bin": {
     "projector": "src/main.js"
   },
+  "scripts": {
+    "start": "node src/main.js",
+    "build": "pkg package.json --compress Brotli --output dist/projector"
+  },
   "author": "Austin Ginn",
   "license": "ISC",
-  "dependencies": {
-  },
   "pkg": {
-    "assets": "data/*",
-    "scripts": "src/telnetClient.js",
-    "targets": [ "node14-linux-arm64" ],
-    "outputPath": "dist"
+    "entry": "src/main.js",
+    "targets": [
+      "latest-linux-x64",
+      "latest-win-x64",
+      "latest-macos-x64",
+      "latest-macos-arm64"
+    ],
+    "assets": [
+      "data/*",
+      "src/telnetClient.js"
+    ]
   }
 }

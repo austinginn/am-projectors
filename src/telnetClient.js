@@ -1,4 +1,4 @@
-import net from 'net';
+const net = require('net');
 
 class TelnetClient {
   constructor() {
@@ -150,4 +150,4 @@ waitForResponse() {
   }
 }
 
-export default TelnetClient;
+module.exports = TelnetClient;
