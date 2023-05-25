@@ -9,8 +9,11 @@ cd ~/Downloads
 ```
 Run the projector executable. The required arguments are {IP} {CMD} {MODEL}.
 ```console
-./projector 192.168.1.2 on DU72X
+./projector-macos-x64 192.168.1.2 on DU72X
 ```
+*Note the projector executable name will be specific to your os*
+<br>
+<br>
 Available commands:
 - on
 - off
@@ -20,7 +23,7 @@ Available commands:
 git clone https://github.com/austinginn/am-projectors.git
 cd am-projectors
 npm install
-npm run projector 192.168.1.2 on DU72X
+npm run start 192.168.1.2 on DU72X
 ```
 ___
 ## Current Model List
