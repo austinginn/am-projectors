@@ -1,4 +1,3 @@
-
 const models = [
     {
         "model": "DU72X",

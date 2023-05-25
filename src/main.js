@@ -1,10 +1,6 @@
-
-// import models from '../data/models.js'
-// import TelnetClient from './telnetClient.js';
 const models = require('../data/models.js');
 const TelnetClient = require('./telnetClient.js');
 
-// console.log(models[0]);
 
 const TIMEOUT = 5000;
 
