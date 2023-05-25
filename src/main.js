@@ -21,7 +21,6 @@ const connectToDevice = async (ip, port, timeout, cmd) => {
     }
 
   } catch (error) {
-    // console.log(error.message);
 
     if (error.message == "Response timeout") {
       console.log("Timed out waiting for a response.");
